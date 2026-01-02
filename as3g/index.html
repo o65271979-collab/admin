@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الدخول - نظام AS3G</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <!-- Premium Mesh Background -->
+    <div class="mesh-bg">
+        <div class="mesh-shape shape-1"></div>
+        <div class="mesh-shape shape-2"></div>
+        <div class="mesh-shape shape-3"></div>
+    </div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="logo-wrapper">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <h1>system<span>.</span>as3g</h1>
+                <p>لوحة إدارة التفعيل</p>
+            </div>
+
+            <form id="loginForm" class="auth-form">
+                <div class="form-group">
+                    <label for="email">البريد الإلكتروني</label>
+                    <div class="input-container">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="email" required placeholder="admin@example.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">كلمة المرور</label>
+                    <div class="input-container">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="password" required placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-auth">
+                    <span class="btn-text">تسجيل الدخول <i class="fas fa-sign-in-alt"></i></span>
+                    <div class="btn-spinner" style="display: none;"></div>
+                </button>
+
+                <div id="errorMessage" class="error-toast" style="display: none;"></div>
+            </form>
+
+            <div class="access-notice">
+                <i class="fas fa-shield-halved"></i>
+                <span>للوصول إلى لوحة التحكم، يجب تسجيل الدخول بحساب المسؤول المعتمد</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Modules -->
+    <script src="security.js"></script>
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="auth.js"></script>
+</body>
+
+</html>

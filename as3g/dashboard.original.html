@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة التحكم - System.as3g</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="logo">
+                <h2><span class="special">system</span><span class="dot">.</span><span class="special">as3g</span></h2>
+            </div>
+            <div class="nav-actions">
+                <span id="adminEmail" class="admin-email"></span>
+                <button id="logoutBtn" class="btn-logout">تسجيل الخروج</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="dashboard-container">
+        <div class="page-header">
+            <h1>📊 لوحة التحكم</h1>
+            <p>إدارة أكواد التفعيل والأجهزة المفعلة</p>
+        </div>
+
+        <!-- Statistics Cards -->
+        <div class="stats-grid">
+            <div class="stat-card blue">
+                <div class="stat-icon">📦</div>
+                <div class="stat-info">
+                    <h3 id="totalCodes">0</h3>
+                    <p>إجمالي الأكواد</p>
+                </div>
+            </div>
+
+            <div class="stat-card green">
+                <div class="stat-icon">✅</div>
+                <div class="stat-info">
+                    <h3 id="usedCodes">0</h3>
+                    <p>الأكواد المستخدمة</p>
+                </div>
+            </div>
+
+            <div class="stat-card orange">
+                <div class="stat-icon">📱</div>
+                <div class="stat-info">
+                    <h3 id="activeDevices">0</h3>
+                    <p>الأجهزة المفعلة</p>
+                </div>
+            </div>
+
+            <div class="stat-card purple">
+                <div class="stat-icon">🎯</div>
+                <div class="stat-info">
+                    <h3 id="availableCodes">0</h3>
+                    <p>أكواد متاحة</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="codes">أكواد التفعيل</button>
+            <button class="tab-btn" data-tab="devices">الأجهزة المفعلة</button>
+            <button class="tab-btn" data-tab="reports">📊 التقارير</button>
+        </div>
+
+        <!-- Codes Tab -->
+        <div id="codesTab" class="tab-content active">
+            <div class="section-header">
+                <h2>إدارة أكواد التفعيل</h2>
+                <button id="generateCodeBtn" class="btn-primary">➕ إنشاء كود جديد</button>
+            </div>
+
+            <div id="codesTable" class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>الكود</th>
+                            <th>اسم العميل</th>
+                            <th>المكان</th>
+                            <th>التليفون</th>
+                            <th>النسخة</th>
+                            <th>الحالة</th>
+                            <th>المدة (يوم)</th>
+                            <th>تاريخ التفعيل</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="codesTableBody">
+                        <tr>
+                            <td colspan="6" class="loading">جاري التحميل...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Devices Tab -->
+        <div id="devicesTab" class="tab-content">
+            <div class="section-header">
+                <h2>الأجهزة المفعلة</h2>
+                <div class="header-actions">
+                    <button class="btn-secondary" onclick="fixDeviceNames()" title="إعادة تسمية الأجهزة بشكل متسلسل">🛠️
+                        تصحيح الأسماء</button>
+                </div>
+            </div>
+
+            <!-- Quick Stats -->
+            <div class="devices-stats-grid">
+                <div class="mini-stat-card blue">
+                    <div class="mini-stat-icon">✅</div>
+                    <div class="mini-stat-info">
+                        <h4 id="activeDevicesCount">0</h4>
+                        <p>أجهزة نشطة</p>
+                    </div>
+                </div>
+                <div class="mini-stat-card orange">
+                    <div class="mini-stat-icon">⏸️</div>
+                    <div class="mini-stat-info">
+                        <h4 id="stoppedDevicesCount">0</h4>
+                        <p>أجهزة متوقفة</p>
+                    </div>
+                </div>
+                <div class="mini-stat-card red">
+                    <div class="mini-stat-icon">❌</div>
+                    <div class="mini-stat-info">
+                        <h4 id="expiredDevicesCount">0</h4>
+                        <p>أجهزة منتهية</p>
+                    </div>
+                </div>
+                <div class="mini-stat-card purple">
+                    <div class="mini-stat-icon">📊</div>
+                    <div class="mini-stat-info">
+                        <h4 id="avgDaysLeft">0</h4>
+                        <p>متوسط الأيام المتبقية</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Search and Filter Bar -->
+            <div class="devices-toolbar">
+                <div class="search-box">
+                    <input type="text" id="devicesSearch" placeholder="🔍 ابحث عن جهاز أو كود..." />
+                </div>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-filter="all">الكل</button>
+                    <button class="filter-btn" data-filter="active">نشط</button>
+                    <button class="filter-btn" data-filter="stopped">متوقف</button>
+                    <button class="filter-btn" data-filter="expired">منتهي</button>
+                </div>
+                <div class="sort-buttons">
+                    <select id="devicesSort" class="sort-select">
+                        <option value="activatedAt-desc">الأحدث تفعيلاً</option>
+                        <option value="activatedAt-asc">الأقدم تفعيلاً</option>
+                        <option value="expiresAt-asc">الأقرب انتهاءً</option>
+                        <option value="expiresAt-desc">الأبعد انتهاءً</option>
+                        <option value="daysLeft-asc">أقل أيام متبقية</option>
+                        <option value="daysLeft-desc">أكثر أيام متبقية</option>
+                        <option value="deviceName-asc">الاسم (أ-ي)</option>
+                        <option value="deviceName-desc">الاسم (ي-أ)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Bulk Actions Bar -->
+            <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
+                <div class="selected-count">
+                    <span id="selectedCount">0</span> جهاز محدد
+                </div>
+                <div class="bulk-buttons">
+                    <button class="bulk-btn bulk-start" onclick="bulkStartDevices()">▶️ تشغيل الكل</button>
+                    <button class="bulk-btn bulk-stop" onclick="bulkStopDevices()">⏸️ إيقاف الكل</button>
+                    <button class="bulk-btn bulk-delete" onclick="bulkDeleteDevices()">🗑️ حذف الكل</button>
+                    <button class="bulk-btn bulk-export" onclick="exportSelectedDevices()">📥 تصدير المحدد</button>
+                </div>
+            </div>
+
+            <div id="devicesTable" class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAllDevices" /></th>
+                            <th style="width: 50px;">#</th>
+                            <th>اسم الجهاز</th>
+                            <th>كود التفعيل</th>
+                            <th>تاريخ التفعيل</th>
+                            <th>تاريخ الانتهاء</th>
+                            <th>الحالة</th>
+                            <th>الإجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="devicesTableBody">
+                        <tr>
+                            <td colspan="7" class="loading">جاري التحميل...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Export All Button -->
+            <div class="export-section">
+                <button class="btn-primary" onclick="exportAllDevices()">📥 تصدير جميع الأجهزة</button>
+            </div>
+        </div>
+
+        <!-- Reports Tab (Activity Logs) -->
+        <div id="reportsTab" class="tab-content">
+            <div class="section-header">
+                <h2>سجل النشاطات (Activity Logs)</h2>
+            </div>
+
+            <!-- Logs Filter Bar -->
+            <div class="devices-toolbar" style="margin-bottom: 20px;">
+                <div class="filter-group" style="display: flex; gap: 10px; flex-wrap: wrap; flex: 1;">
+                    <input type="date" id="logDateFrom" class="form-control"
+                        style="padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                    <input type="date" id="logDateTo" class="form-control"
+                        style="padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                    <input type="text" id="logAdminFilter" placeholder="بحث بحساب الأدمن..."
+                        style="padding: 8px; border-radius: 8px; border: 1px solid #ddd; min-width: 200px;">
+                    <select id="logActionFilter" style="padding: 8px; border-radius: 8px; border: 1px solid #ddd;">
+                        <option value="all">كل الإجراءات</option>
+                        <option value="إنشاء أكواد">إنشاء أكواد</option>
+                        <option value="حذف كود">حذف كود</option>
+                        <option value="إيقاف سيستم">إيقاف سيستم</option>
+                        <option value="تشغيل سيستم">تشغيل سيستم</option>
+                        <option value="حذف سيستم">حذف سيستم</option>
+                    </select>
+                    <button id="applyLogFilters" class="btn-primary" style="padding: 8px 20px;">تطبيق الفلتر</button>
+                </div>
+            </div>
+
+            <div class="data-table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>التاريخ / الوقت</th>
+                            <th>حساب الأدمن</th>
+                            <th>نوع الإجراء</th>
+                            <th>التفاصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportsTableBody">
+                        <tr>
+                            <td colspan="4" class="loading">جاري تحميل السجل...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Code Modal -->
+    <div id="generateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إنشاء كود تفعيل جديد</h3>
+                <span class="close-modal">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="customerName">اسم العميل *</label>
+                    <input type="text" id="customerName" placeholder="أدخل اسم العميل" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerLocation">اسم المكان/الفرع *</label>
+                    <input type="text" id="customerLocation" placeholder="مثال: فرع المعادي" required>
+                </div>
+                <div class="form-group">
+                    <label for="customerPhone">رقم التليفون *</label>
+                    <input type="tel" id="customerPhone" placeholder="01XXXXXXXXX" required>
+                </div>
+                <div class="form-group">
+                    <label for="versionType">نسخة البرنامج *</label>
+                    <select id="versionType" class="form-control"
+                        style="width: 100%; padding: 12px; border-radius: 10px; border: 1px solid rgba(0,0,0,0.1);">
+                        <option value="offline" selected>نسخة أوفلاين (Offline)</option>
+                        <option value="online">نسخة أونلاين (Online)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>مدة الاشتراك</label>
+                    <div style="display: flex; gap: 15px; align-items: center; margin-bottom: 10px;">
+                        <input type="checkbox" id="isLifetime" style="width: 20px; height: 20px;">
+                        <label for="isLifetime" style="margin: 0; cursor: pointer;">مدى الحياة (Lifetime)</label>
+                    </div>
+                    <input type="number" id="codeDuration" value="30" min="1" max="365" class="form-control">
+                </div>
+                <div class="form-group">
+                    <label for="codeCount">عدد الأكواد المطلوبة</label>
+                    <input type="number" id="codeCount" value="1" min="1" max="10">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="confirmGenerateBtn" class="btn-primary">إنشاء</button>
+                <button class="btn-secondary close-modal">إلغاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module" src="firebase-config.js"></script>
+    <script type="module" src="dashboard.js"></script>
+</body>
+
+</html>

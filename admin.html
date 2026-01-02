@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لوحة تحكم الإدارة - أنظمة الكاشير</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="admin.css">
+    <script src="as3g/security.js"></script>
+
+</head>
+
+<body>
+    <div class="admin-container">
+        <!-- Sidebar -->
+        <div class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <button class="sidebar-close-btn" id="sidebarCloseBtn"><i class="fas fa-times"></i></button>
+                <h2><i class="fas fa-cogs"></i> لوحة التحكم</h2>
+                <p id="adminUserName">مرحباً، المدير</p>
+            </div>
+
+            <nav class="sidebar-menu">
+                <button class="menu-item active" data-page="dashboard" onclick="switchTab('dashboard')">
+                    <i class="fas fa-tachometer-alt"></i>
+                    الرئيسية
+                </button>
+                <button class="menu-item" data-page="orders" onclick="switchTab('orders')">
+                    <i class="fas fa-shopping-cart"></i>
+                    الطلبات
+                </button>
+                <button class="menu-item" data-page="users" onclick="switchTab('users')">
+                    <i class="fas fa-user-shield"></i>
+                    إدارة المديرين
+                </button>
+                <button class="menu-item" data-page="customers" onclick="switchTab('customers')">
+                    <i class="fas fa-users"></i>
+                    قائمة العملاء
+                </button>
+                <button class="menu-item" data-page="support" onclick="switchTab('support')">
+                    <i class="fas fa-headset"></i>
+                    الدعم الفني
+                </button>
+
+
+                <button class="menu-item" data-page="products" onclick="switchTab('products')">
+                    <i class="fas fa-box"></i>
+                    إدارة المنتجات
+                </button>
+
+
+
+                <button class="menu-item" data-page="reports" onclick="switchTab('reports')">
+                    <i class="fas fa-chart-line"></i>
+                    التقارير والإحصائيات
+                </button>
+
+                <button class="menu-item" data-page="faq" onclick="switchTab('faq')">
+                    <i class="fas fa-question-circle"></i>
+                    الأسئلة الشائعة
+                </button>
+
+                <button class="menu-item" data-page="settings" onclick="switchTab('settings')">
+                    <i class="fas fa-cog"></i>
+                    الإعدادات
+                </button>
+
+                <button class="menu-item" data-page="logs" onclick="switchTab('logs')">
+                    <i class="fas fa-history"></i>
+                    سجلات النشاط
+                </button>
+
+                <button class="menu-item" data-page="support_activity" onclick="switchTab('support_activity')">
+                    <i class="fas fa-user-clock"></i>
+                    نشاط فريق الدعم
+                </button>
+
+                <button class="menu-item" data-page="live_payments" onclick="switchTab('live_payments')">
+                    <i class="fas fa-satellite-dish"></i>
+                    المدفوعات الحية
+                </button>
+
+                <button class="menu-item" data-page="wallet_recharge" onclick="switchTab('wallet_recharge')">
+                    <i class="fas fa-wallet"></i>
+                    طلبات شحن الرصيد
+                </button>
+                <button class="menu-item" data-page="hardware_marketplace" onclick="switchTab('hardware_marketplace')">
+                    <i class="fas fa-laptop"></i>
+                    سوق الأجهزة المستعملة
+                </button>
+
+                <a href="as3g/dashboard.html" class="menu-item" data-page="as3g" style="text-decoration: none;">
+                    <i class="fas fa-external-link-alt"></i>
+                    نظام AS3G
+                </a>
+                <button class="menu-item" onclick="handleLogout()"
+                    style="margin-top: 2rem; border-top: 1px solid #34495e; color: #e74c3c;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-main" id="adminMain">
+            <div class="admin-header">
+                <div class="header-left-side">
+                    <button class="mobile-toggle" id="mobileToggle">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    <h1 class="admin-title" id="pageTitle">لوحة التحكم الرئيسية</h1>
+                </div>
+                <div class="admin-actions">
+                    <div class="global-search-wrapper">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="globalSearchInput" placeholder="بحث شامل (طلبات، مستخدمين، منتجات...)"
+                            onkeyup="handleGlobalSearch(event)">
+                        <div id="quickSearchResults" class="quick-search-dropdown"></div>
+                    </div>
+                    <div class="header-notification-wrapper" id="supportNotificationBell"
+                        onclick="toggleNotificationDropdown(event)">
+                        <i class="fas fa-bell"></i>
+                        <span class="notification-badge" id="supportNotificationCount" style="display: none;">0</span>
+
+                        <!-- Notification Dropdown -->
+                        <div class="notification-dropdown" id="notificationDropdown" style="display: none;">
+                            <div class="notification-header">
+                                <h4>الإشعارات الجديدة</h4>
+                                <button onclick="markAllAsRead(event)" class="mark-all-read">تحديد الكل كمقروء</button>
+                            </div>
+                            <div class="notification-list" id="notificationList">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                            <div class="notification-footer">
+                                <a href="#"
+                                    onclick="switchTab('support'); closeNotificationDropdown(); return false;">عرض جميع
+                                    التذاكر</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="admin-content">
+                <!-- Dashboard Tab -->
+                <div id="dashboardTab" class="tab-content active">
+                    <div class="stats-grid" id="statsGrid">
+                        <!-- Stats will be loaded here -->
+                    </div>
+
+                    <h3>آخر الأنشطة</h3>
+                    <div id="recentActivities">
+                        <!-- Recent activities will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Orders Tab -->
+                <div id="ordersTab" class="tab-content">
+                    <div class="tab-header-modern">
+                        <div class="header-main">
+                            <h2>إدارة الطلبات</h2>
+                            <p>إدارة طلبات الاشتراكات والخدمات</p>
+                        </div>
+                    </div>
+
+                    <div class="filter-toolbar-modern">
+                        <div class="search-box-modern">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="orderSearchInput" placeholder="بحث عن عميل أو نظام..."
+                                onkeyup="searchOrders()">
+                        </div>
+                        <div class="filter-actions">
+                            <select id="orderStatusFilter" onchange="filterOrders()" class="filter-select-modern">
+                                <option value="all">كل الحالات</option>
+                                <option value="pending">قيد الانتظار</option>
+                                <option value="pending_payment">في انتظار الدفع</option>
+                                <option value="processing">قيد المعالجة</option>
+                                <option value="approved">تم القبول</option>
+                                <option value="completed">مكتمل</option>
+                                <option value="rejected">مرفوض</option>
+                            </select>
+                            <button class="btn-refresh-modern" onclick="loadOrders()">
+                                <i class="fas fa-sync-alt"></i>
+                                تحديث
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="data-card-modern"
+                        style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                        <div id="ordersGrid" class="domain-requests-grid">
+                            <!-- سيتم تعبئة البطاقات بواسطة JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Users Tab (Admins Only) -->
+                <div id="usersTab" class="tab-content">
+                    <div class="tab-header-modern">
+                        <div class="header-info">
+                            <h2>إدارة المديرين والمشرفين</h2>
+                            <p>التحكم في صلاحيات الوصول للنظام</p>
+                        </div>
+                        <button class="btn-add-premium" onclick="showAddAccountModal()">
+                            <i class="fas fa-plus"></i>
+                            إضافة مدير جديد
+                        </button>
+                    </div>
+
+
+                    <!-- Users Tab Filter -->
+                    <div class="filter-toolbar-modern">
+                        <div class="search-box-modern">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="userSearchInput" placeholder="البحث بالاسم أو البريد..."
+                                onkeyup="searchUsers()">
+                        </div>
+                        <div class="filter-actions">
+                            <select id="userRoleFilter" onchange="filterUsers()" class="filter-select-modern">
+                                <option value="">جميع المسؤولين</option>
+                                <option value="support">دعم فني</option>
+                                <option value="admin">مدير</option>
+                                <option value="super_admin">مدير عام</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="adminsGrid" class="search-grid">
+                        <!-- Admin cards will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Customers Tab (Regular Users) -->
+                <div id="customersTab" class="tab-content">
+                    <div class="tab-header-modern">
+                        <div class="header-info">
+                            <h2>قائمة العملاء المسجلين</h2>
+                            <p>إدارة بيانات ومنتجات المستخدمين العاديين</p>
+                        </div>
+                        <button class="btn-add-premium" onclick="showAddAccountModal('customer')">
+                            <i class="fas fa-user-plus"></i>
+                            إضافة عميل جديد
+                        </button>
+                    </div>
+
+                    <!-- Customer Stats Grid -->
+                    <div id="customerStatsGrid" class="stats-grid-modern" style="display: none;">
+                        <!-- Injected by JS -->
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div class="filter-toolbar-modern">
+                        <div class="search-box-modern">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="customerSearchInput"
+                                placeholder="البحث باسم العميل، بريده، أو نشاطه..." onkeyup="searchCustomers()">
+                        </div>
+
+                        <div class="filter-tabs-container" id="customerFilterTabs">
+                            <button class="filter-tab active" onclick="filterCustomersByTab('all')">الكل</button>
+                            <button class="filter-tab" onclick="filterCustomersByTab('active')">نشط</button>
+                            <button class="filter-tab" onclick="filterCustomersByTab('blocked')">محظور</button>
+                            <button class="filter-tab" onclick="filterCustomersByTab('vip')">💎 الأكثر إنفاقاً</button>
+                        </div>
+                    </div>
+
+                    <div id="customersTableArea">
+                        <!-- Customers list will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Support Tab -->
+                <div id="supportTab" class="tab-content">
+                    <div class="filter-toolbar-modern">
+                        <div class="filter-actions" style="width: 100%; display: flex; gap: 1rem;">
+                            <select id="ticketStatusFilter" onchange="filterTickets()" class="filter-select-modern"
+                                style="flex: 1;">
+                                <option value="">حالة التذكرة (الكل)</option>
+                                <option value="open">مفتوحة</option>
+                                <option value="in-progress">قيد المعالجة</option>
+                                <option value="resolved">تم الحل</option>
+                                <option value="closed">مغلقة</option>
+                            </select>
+                            <select id="ticketPriorityFilter" onchange="filterTickets()" class="filter-select-modern"
+                                style="flex: 1;">
+                                <option value="">الأولوية (الكل)</option>
+                                <option value="high">عالية</option>
+                                <option value="medium">متوسطة</option>
+                                <option value="low">منخفضة</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div id="supportTicketsTable">
+                        <!-- Support tickets table will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Wallet Recharge Requests Tab -->
+                <div id="wallet_rechargeTab" class="tab-content">
+                    <div class="tab-header-modern">
+                        <div class="header-main">
+                            <h2>طلبات شحن رصيد المحفظة</h2>
+                            <p>إدارة طلبات شحن الرصيد للعملاء</p>
+                        </div>
+                    </div>
+
+                    <div class="filter-toolbar-modern">
+                        <div class="search-box-modern">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="walletRechargeSearchInput" placeholder="ابحث عن عميل..."
+                                onkeyup="searchWalletRecharges()">
+                        </div>
+                        <div class="filter-actions">
+                            <select id="walletRechargeStatusFilter" onchange="filterWalletRecharges()"
+                                class="filter-select-modern">
+                                <option value="all">كل الحالات</option>
+                                <option value="pending">قيد الانتظار</option>
+                                <option value="approved">تم القبول</option>
+                                <option value="rejected">مرفوض</option>
+                            </select>
+                            <button class="btn-refresh-modern" onclick="loadWalletRechargeRequests()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="walletRechargeGrid" class="admin-domains-grid">
+                        <!-- Wallet recharge requests will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Hardware Marketplace Tab -->
+                <div id="hardware_marketplaceTab" class="tab-content">
+                    <div class="tab-header-modern">
+                        <div class="header-main">
+                            <h2>إدارة سوق الأجهزة المستعملة</h2>
+                            <p>عرض وإدارة جميع إعلانات الأجهزة المنشورة</p>
+                        </div>
+                    </div>
+
+                    <div class="filter-toolbar-modern">
+                        <div class="search-box-modern">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="hardwareMarketplaceSearchInput"
+                                placeholder="ابحث عن إعلان أو بائع..." onkeyup="searchHardwareListings()">
+                        </div>
+                        <div class="filter-actions">
+                            <select id="hardwareMarketplaceStatusFilter" onchange="filterHardwareListings()"
+                                class="filter-select-modern">
+                                <option value="all">كل الحالات</option>
+                                <option value="active">نشط فقط</option>
+                                <option value="expired">منتهي فقط</option>
+                            </select>
+                            <button class="btn-refresh-modern" onclick="loadHardwareMarketplace()">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="hardwareMarketplaceGrid" class="admin-domains-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 1.5rem;">
+                        <!-- Hardware marketplace listings will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Systems Tab -->
+                <div id="systemsTab" class="tab-content">
+                    <button class="btn-add-premium" onclick="showAddSystemModal()" style="margin-bottom: 2rem;">
+                        <i class="fas fa-plus"></i>
+                        إضافة نظام جديد
+                    </button>
+
+                    <div id="systemsManagement">
+                        <!-- Systems management will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Settings Tab -->
+                <div id="settingsTab" class="tab-content">
+                    <div class="settings-header" style="margin-bottom: 2.5rem;">
+                        <h2 style="color: #1e3a5f; margin-bottom: 0.5rem;">إعدادات النظام</h2>
+                        <p style="color: #64748b;">تحكم بجميع جوانب المنصة من مكان واحد</p>
+                    </div>
+
+                    <div class="settings-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); gap: 2rem;">
+                        <!-- Branding & General -->
+                        <div class="settings-section-modern">
+                            <h3
+                                style="color: #2c5aa0; margin-bottom: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem;">
+                                <i class="fas fa-bullhorn"></i> الهوية والمعلومات
+                            </h3>
+                            <div class="form-group" style="margin-bottom: 1.5rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 700;">اسم
+                                    الموقع</label>
+                                <input type="text" id="siteNameInput" class="form-control"
+                                    style="width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;"
+                                    value="AS3G SYSTEM">
+                            </div>
+                            <div class="form-group" style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 700;">بريد
+                                    التواصل</label>
+                                <input type="email" id="siteEmailInput" class="form-control"
+                                    style="width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;"
+                                    value="info@as3g.com">
+                            </div>
+                            <button class="btn-primary" onclick="saveGeneralSettings()" style="width: 100%;">
+                                <i class="fas fa-save"></i> حفظ التغييرات الأساسية
+                            </button>
+                        </div>
+
+                        <!-- Appearance & Localization -->
+                        <div class="settings-section-modern">
+                            <h3
+                                style="color: #2c5aa0; margin-bottom: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem;">
+                                <i class="fas fa-paint-brush"></i> المظهر واللغة
+                            </h3>
+                            <div style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 1rem; font-weight: 700;">الوضع
+                                    المظلم</label>
+                                <div class="theme-switch-container">
+                                    <button class="theme-btn-modern active" id="themeLightBtn"
+                                        onclick="quickChangeTheme('light')">
+                                        <i class="fas fa-sun"></i> فاتح
+                                    </button>
+                                    <button class="theme-btn-modern" id="themeDarkBtn"
+                                        onclick="quickChangeTheme('dark')">
+                                        <i class="fas fa-moon"></i> داكن
+                                    </button>
+                                </div>
+                            </div>
+                            <div style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 1rem; font-weight: 700;">لغة
+                                    الواجهة</label>
+                                <div class="theme-switch-container">
+                                    <button class="theme-btn-modern active" id="langArBtn"
+                                        onclick="quickChangeLanguage('ar')">🇸🇦 بالعربي</button>
+                                    <button class="theme-btn-modern" id="langEnBtn"
+                                        onclick="quickChangeLanguage('en')">🇺🇸 English</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Maintenance & Security -->
+                        <div class="settings-section-modern">
+                            <h3
+                                style="color: #2c5aa0; margin-bottom: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem;">
+                                <i class="fas fa-shield-alt"></i> الصيانة والأمان
+                            </h3>
+                            <div
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; background: #fff5f5; padding: 1rem; border-radius: 12px;">
+                                <div>
+                                    <h4 style="margin: 0; color: #c53030;">وضع الصيانة</h4>
+                                    <p style="margin: 0; font-size: 0.85rem; color: #666;">إيقاف الموقع مؤقتاً
+                                        للمستخدمين</p>
+                                </div>
+                                <label class="switch">
+                                    <input type="checkbox" id="maintenanceToggle"
+                                        onchange="toggleMaintenanceMode(this.checked)">
+                                    <span class="slider"></span>
+                                </label>
+                            </div>
+                            <button class="btn-secondary" onclick="showAdminsList()"
+                                style="width: 100%; margin-bottom: 1rem;">
+                                <i class="fas fa-users-cog"></i> إدارة فريق العمل
+                            </button>
+                            <button class="btn-secondary" onclick="showPermissionsMatrix()" style="width: 100%;">
+                                <i class="fas fa-table"></i> مصفوفة الصلاحيات
+                            </button>
+                        </div>
+
+                        <!-- Advanced Security -->
+                        <div class="settings-section-modern">
+                            <h3
+                                style="color: #2c5aa0; margin-bottom: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem;">
+                                <i class="fas fa-user-shield"></i> الأمان المتقدم
+                            </h3>
+
+                            <!-- IP Whitelist -->
+                            <div style="margin-bottom: 2rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.5rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">القائمة البيضاء (IP
+                                            Whitelist)</h4>
+                                        <p style="margin: 0; font-size: 0.85rem; color: #64748b;">السماح بالدخول فقط من
+                                            عناوين IP محددة</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox"
+                                            onchange="toggleSecuritySetting(this, 'ipWhitelistEnabled')"
+                                            id="ipWhitelistToggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+
+                                <div id="ipWhitelistSection"
+                                    style="display: none; background: #f8f9fa; padding: 1.5rem; border-radius: 12px; margin-top: 1rem;">
+                                    <div style="display: flex; gap: 0.8rem; margin-bottom: 1rem;">
+                                        <input type="text" id="newIpInput"
+                                            placeholder="أدخل عنوان IP (مثال: 192.168.1.1)" class="form-control"
+                                            style="flex: 1; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 8px;">
+                                        <button onclick="addIpToWhitelist()" class="btn-primary"
+                                            style="padding: 0 1.5rem; font-size: 0.9rem;">إضافة</button>
+                                        <button onclick="addCurrentIp()" class="btn-success"
+                                            style="padding: 0 1rem; font-size: 0.9rem;" title="كشف عنواني"><i
+                                                class="fas fa-map-marker-alt"></i></button>
+                                    </div>
+                                    <div id="ipList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;"></div>
+                                </div>
+                            </div>
+
+                            <!-- Password Rotation -->
+                            <div
+                                style="margin-bottom: 1.5rem; border-bottom: 1px solid #f1f5f9; padding-bottom: 1.5rem;">
+                                <div
+                                    style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">سياسة تغيير كلمة المرور
+                                        </h4>
+                                        <p style="margin: 0; font-size: 0.85rem; color: #64748b;">إجبار المستخدمين على
+                                            تغيير كلمة المرور دورياً</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox"
+                                            onchange="toggleSecuritySetting(this, 'passwordRotationEnabled')"
+                                            id="passwordRotationToggle">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <div id="passwordRotationSection" style="display: none; padding-top: 1rem;">
+                                    <div
+                                        style="display: flex; align-items: center; gap: 1rem; background: #f8f9fa; padding: 1rem; border-radius: 8px;">
+                                        <span style="font-weight: 600;">فرض التغيير كل:</span>
+                                        <input type="number" id="passwordRotationDays" value="90" min="30"
+                                            style="width: 100px; padding: 0.6rem; border: 2px solid #e2e8f0; border-radius: 8px;"
+                                            onchange="updateSecuritySetting('passwordRotationDays', this.value)">
+                                        <span style="color: #64748b;">يوم</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Device Verification -->
+                            <div>
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <div>
+                                        <h4 style="margin: 0; font-size: 1rem; color: #1e293b;">التحقق من الأجهزة
+                                            الجديدة</h4>
+                                        <p style="margin: 0; font-size: 0.85rem; color: #64748b;">طلب كود تحقق عبر
+                                            البريد الإلكتروني عند تسجيل الدخول من جهاز جديد</p>
+                                    </div>
+                                    <label class="switch">
+                                        <input type="checkbox" id="deviceVerificationToggle"
+                                            onchange="toggleSecuritySetting(this, 'deviceVerificationEnabled')">
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Payment Settings -->
+                        <div class="settings-section-modern">
+                            <h3
+                                style="color: #2c5aa0; margin-bottom: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem;">
+                                <i class="fas fa-wallet"></i> إعدادات الدفع
+                            </h3>
+                            <div class="form-group" style="margin-bottom: 2rem;">
+                                <label style="display: block; margin-bottom: 0.5rem; font-weight: 700;">رقم فودافون
+                                    كاش</label>
+                                <input type="text" id="vodafoneCashInput" class="form-control"
+                                    style="width: 100%; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 10px;"
+                                    placeholder="مثال: 01012345678">
+                            </div>
+                            <button class="btn-primary" onclick="savePaymentSettings()"
+                                style="width: 100%; background: #e60000;">
+                                <i class="fas fa-save"></i> حفظ رقم الكاش
+                            </button>
+                        </div>
+
+                        <!-- Data Tools -->
+                        <div class="settings-section-modern">
+                            <h3
+                                style="color: #2c5aa0; margin-bottom: 2rem; border-bottom: 2px solid #f1f5f9; padding-bottom: 1rem;">
+                                <i class="fas fa-database"></i> أدوات البيانات
+                            </h3>
+                            <div style="display: grid; gap: 1rem;">
+                                <button class="btn-primary" onclick="quickBackup()" style="background: #28a745;">
+                                    <i class="fas fa-file-export"></i> تصدير نسخة احتياطية (JSON)
+                                </button>
+                                <button class="btn-primary" onclick="document.getElementById('quickImportFile').click()"
+                                    style="background: #17a2b8;">
+                                    <i class="fas fa-file-import"></i> استيراد بيانات من ملف
+                                </button>
+                                <input type="file" id="quickImportFile" accept=".json" style="display: none;"
+                                    onchange="quickImport(this)">
+                                <button class="btn-secondary" onclick="refreshQuickStats()"
+                                    style="border: 2px dashed #cbd5e1;">
+                                    <i class="fas fa-sync-alt"></i> تحديث قاعدة البيانات والإحصائيات
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Products Tab -->
+                <div id="productsTab" class="tab-content">
+                    <div class="tab-header-modern"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2.5rem; background: #f8f9fa; padding: 1.5rem; border-radius: 15px; flex-wrap: wrap; gap: 1rem;">
+                        <div>
+                            <h2 style="color: #1e3a5f; margin: 0 0 0.5rem 0;">إدارة المنتجات المحترفة</h2>
+                            <p style="color: #64748b; margin: 0;">تحكم في باقاتك والخدمات المعروضة في واجهة الموقع</p>
+                        </div>
+                        <button class="btn-add-premium" onclick="showAddProductModal()">
+                            <i class="fas fa-plus"></i> إضافة باقة/منتج جديد
+                        </button>
+                    </div>
+
+                    <div class="filter-toolbar-modern"
+                        style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                        <div style="flex: 2; min-width: 250px; position: relative;">
+                            <i class="fas fa-search"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                            <input type="text" placeholder="ابحث عن منتج..." onkeyup="searchProducts(this.value)"
+                                style="width: 100%; padding: 0.8rem 2.8rem 0.8rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem;">
+                        </div>
+                        <select onchange="filterProducts('category', this.value)"
+                            style="flex: 1; min-width: 150px; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 12px; background: white; font-weight: 600;">
+                            <option value="">جميع الفئات</option>
+                            <option value="basic">باقة أساسية</option>
+                            <option value="advanced">باقة متقدمة</option>
+                            <option value="professional">باقة احترافية</option>
+                        </select>
+                        <select onchange="filterProducts('status', this.value)"
+                            style="flex: 1; min-width: 150px; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 12px; background: white; font-weight: 600;">
+                            <option value="">جميع الحالات</option>
+                            <option value="active">نشط فقط</option>
+                            <option value="inactive">مخفي فقط</option>
+                        </select>
+                        <button class="btn-secondary" onclick="resetProductFilters()" style="padding: 0.8rem 1.5rem;">
+                            <i class="fas fa-undo"></i> تصفية
+                        </button>
+                    </div>
+
+                    <div id="productsContainer" class="products-grid">
+                        <!-- Modern product cards will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- FAQ Tab -->
+                <div id="faqTab" class="tab-content">
+                    <div style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                        <button class="btn-add-premium" onclick="showAddFAQModal()">
+                            <i class="fas fa-plus"></i>
+                            إضافة سؤال جديد
+                        </button>
+                        <button class="btn-primary" onclick="loadFAQCategories()" style="background: #28a745;">
+                            <i class="fas fa-sync"></i>
+                            تحديث القائمة
+                        </button>
+                    </div>
+
+                    <div class="filter-section">
+                        <div class="filter-item">
+                            <label>الفئة</label>
+                            <select id="faqCategoryFilter" onchange="filterFAQs()">
+                                <option value="">جميع الفئات</option>
+                                <option value="technical">الأسئلة التقنية</option>
+                                <option value="pricing">أسئلة الأسعار</option>
+                                <option value="support">أسئلة الدعم الفني</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>البحث</label>
+                            <input type="text" id="faqSearchInput" placeholder="البحث في الأسئلة..."
+                                onkeyup="searchFAQs()">
+                        </div>
+                    </div>
+
+                    <div id="faqManagement">
+                        <!-- FAQ management will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Reports Tab -->
+                <div id="reportsTab" class="tab-content">
+                    <div class="tab-header-modern">
+                        <div class="header-main">
+                            <h2>مركز التقارير والإحصائيات</h2>
+                            <p>تحليل شامل لأداء النظام والطلبات والمستخدمين</p>
+                        </div>
+                        <button class="btn-refresh-modern" onclick="loadReportsData()">
+                            <i class="fas fa-sync-alt"></i> تحديث التقارير
+                        </button>
+                    </div>
+
+                    <!-- Statistics Overview Cards -->
+                    <div class="reports-stats-grid">
+                        <div class="report-stat-card primary">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="fas fa-shopping-bag"></i></div>
+                                <span class="card-trend up"><i class="fas fa-arrow-up"></i> نشط</span>
+                            </div>
+                            <div class="card-info">
+                                <span class="card-label">إجمالي الطلبات</span>
+                                <h3 id="totalOrdersStat">0</h3>
+                            </div>
+                        </div>
+                        <div class="report-stat-card success">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="fas fa-dollar-sign"></i></div>
+                                <span class="card-trend up"><i class="fas fa-check-circle"></i> مكتمل</span>
+                            </div>
+                            <div class="card-info">
+                                <span class="card-label">إجمالي المبيعات</span>
+                                <h3 id="totalRevenueStat">0 ج.م</h3>
+                            </div>
+                        </div>
+                        <div class="report-stat-card warning">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="fas fa-globe"></i></div>
+                                <span class="card-trend"><i class="fas fa-clock"></i> معلق</span>
+                            </div>
+                            <div class="card-info">
+                                <span class="card-label">طلبات النطاقات</span>
+                                <h3 id="totalDomainRequestsStat">0</h3>
+                            </div>
+                        </div>
+                        <div class="report-stat-card info">
+                            <div class="card-header">
+                                <div class="card-icon"><i class="fas fa-users"></i></div>
+                                <span class="card-trend"><i class="fas fa-user-plus"></i> نمو</span>
+                            </div>
+                            <div class="card-info">
+                                <span class="card-label">المستخدمين</span>
+                                <h3 id="totalUsersStat">0</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts and Details Section -->
+                    <div class="reports-visual-grid">
+                        <div class="report-chart-box">
+                            <div class="box-header">
+                                <h3>توزيع حالات الطلبات</h3>
+                                <i class="fas fa-chart-pie"></i>
+                            </div>
+                            <div class="chart-content">
+                                <canvas id="orderStatusChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="report-chart-box">
+                            <div class="box-header">
+                                <h3>نشاط الدعم الفني</h3>
+                                <i class="fas fa-headset"></i>
+                            </div>
+                            <div class="chart-content">
+                                <div class="support-stats-mini">
+                                    <div class="mini-stat">
+                                        <span>تذاكر مفتوحة</span>
+                                        <div class="progress-bar">
+                                            <div id="openTicketsProgress" style="width: 0%"></div>
+                                        </div>
+                                        <b id="openTicketsCount">0</b>
+                                    </div>
+                                    <div class="mini-stat">
+                                        <span>تم الحل</span>
+                                        <div class="progress-bar success">
+                                            <div id="resolvedTicketsProgress" style="width: 0%"></div>
+                                        </div>
+                                        <b id="resolvedTicketsCount">0</b>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coupons Tab -->
+                <div id="couponsTab" class="tab-content">
+                    <button class="btn-primary" onclick="showAddCouponModal()" style="margin-bottom: 2rem;">
+                        <i class="fas fa-plus"></i>
+                        إضافة كوبون جديد
+                    </button>
+                    <div id="couponsContainer">
+                        <!-- Coupons table will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- CMS Tab -->
+                <div id="cmsTab" class="tab-content">
+                    <div class="cms-section" style="margin-bottom: 2rem;">
+                        <h3>إدارة آراء العملاء</h3>
+                        <button class="btn-primary" onclick="showAddTestimonialModal()" style="margin-bottom: 1rem;">
+                            <i class="fas fa-plus"></i> إضافة رأي جديد
+                        </button>
+                        <div id="testimonialsContainer"></div>
+                    </div>
+                </div>
+
+
+
+                <!-- Live Payments Tab -->
+                <div id="live_paymentsTab" class="tab-content">
+                    <div class="live-payments-dashboard">
+                        <div class="live-payments-header">
+                            <div class="header-main">
+                                <h2>
+                                    <div class="pulse-icon"><i class="fas fa-satellite-dish"></i></div>
+                                    مراقبة المدفوعات الحية (SMS)
+                                </h2>
+                                <p>رصد تلقائي لرسائل التحويل الواردة من المحافظ الإلكترونية</p>
+                            </div>
+
+                            <div class="header-actions">
+                                <div class="sound-toggle-box"
+                                    style="background: white; padding: 0.5rem 1rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 0.8rem;">
+                                    <span style="font-size: 0.85rem; color: #64748b; font-weight: 600;">تنبيه
+                                        صوتي</span>
+                                    <label class="switch" style="transform: scale(0.8);">
+                                        <input type="checkbox" id="paymentSoundToggle" checked>
+                                        <span class="slider"></span>
+                                    </label>
+                                </div>
+                                <button class="btn-refresh-modern" onclick="loadIncomingPayments()">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>تحديث يدوي</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats Row -->
+                        <div class="stats-row">
+                            <div class="stat-card-mini">
+                                <div class="stat-icon" style="background: #ecfdf5; color: #10b981;">
+                                    <i class="fas fa-money-bill-wave"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span>إجمالي اليوم</span>
+                                    <strong id="todayPaymentTotal">0 ج.م</strong>
+                                </div>
+                            </div>
+
+                            <div class="stat-card-mini">
+                                <div class="stat-icon" style="background: #fffbeb; color: #f59e0b;">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span>بانتظار الربط</span>
+                                    <strong id="pendingPaymentCount">0 رسالة</strong>
+                                </div>
+                            </div>
+
+                            <div class="stat-card-mini">
+                                <div class="stat-icon" style="background: #f0fdf4; color: #22c55e;">
+                                    <i class="fas fa-check-double"></i>
+                                </div>
+                                <div class="stat-info">
+                                    <span>تمت معالجتها اليوم</span>
+                                    <strong id="matchedPaymentCount">0</strong>
+                                </div>
+                            </div>
+
+                            <div class="search-container-mini">
+                                <div class="search-box-live">
+                                    <i class="fas fa-search"></i>
+                                    <input type="text" id="livePaymentSearch" placeholder="بحث سريع في الرسائل..."
+                                        onkeyup="searchIncomingPayments()">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="livePaymentsGrid" class="domain-requests-grid">
+                        <!-- سيتم تحميل رسائل الدفع هنا -->
+                    </div>
+                </div>
+
+
+
+                <!-- Search Results Tab -->
+                <div id="searchResultsTab" class="tab-content">
+                    <div class="tab-header-modern">
+                        <div class="header-main">
+                            <h2 id="searchQueryTitle">نتائج البحث</h2>
+                            <p id="searchCountSub">ابحث عن أي شيء في النظام</p>
+                        </div>
+                    </div>
+
+                    <div class="search-results-container" id="globalSearchResults">
+                        <div class="empty-search-state">
+                            <i class="fas fa-search-plus"></i>
+                            <p>ابدأ الكتابة في خانة البحث العلوية للبحث في النظام</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Support Activity Tab -->
+                <!-- Support Activity Tab -->
+                <div id="support_activityTab" class="tab-content">
+                    <div class="tab-header-modern"
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; background: #f8f9fa; padding: 1.5rem; border-radius: 15px;">
+                        <div>
+                            <h2 style="color: #1e3a5f; margin: 0 0 0.5rem 0;">نشاط فريق الدعم الفني</h2>
+                            <p style="color: #64748b; margin: 0;">لوحة متابعة أداء وإنتاجية فريق الدعم لحظة بلحظة</p>
+                        </div>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button class="btn-secondary" onclick="exportSupportActivity()"
+                                style="background: #10b981; color: white; border: none;">
+                                <i class="fas fa-file-excel"></i> تصدير تقرير
+                            </button>
+                            <button class="btn-secondary" onclick="loadSupportActivity()">
+                                <i class="fas fa-sync-alt"></i> تحديث
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- New: Performance KPIs -->
+                    <div class="activity-kpi-grid"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div class="kpi-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem;">
+                            <div
+                                style="width: 50px; height: 50px; border-radius: 10px; background: #eff6ff; color: #3b82f6; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-comment-dots"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.8rem; color: #1e293b;" id="todayRepliesCount">0</h3>
+                                <p style="margin: 0; color: #64748b; font-size: 0.9rem;">ردود اليوم</p>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem;">
+                            <div
+                                style="width: 50px; height: 50px; border-radius: 10px; background: #f0fdf4; color: #10b981; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-trophy"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1rem; color: #1e293b;" id="topPerformerName">-</h3>
+                                <p style="margin: 0; color: #64748b; font-size: 0.9rem;">الأكثر نشاطاً اليوم</p>
+                            </div>
+                        </div>
+
+                        <div class="kpi-card"
+                            style="background: white; padding: 1.5rem; border-radius: 12px; border: 1px solid #e2e8f0; display: flex; align-items: center; gap: 1rem;">
+                            <div
+                                style="width: 50px; height: 50px; border-radius: 10px; background: #fff7ed; color: #f97316; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <h3 style="margin: 0; font-size: 1.8rem; color: #1e293b;">النشاط</h3>
+                                <p style="margin: 0; color: #64748b; font-size: 0.9rem;">توزيع الأداء</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- New: Activity Chart -->
+                    <div class="chart-section"
+                        style="background: white; padding: 1.5rem; border-radius: 12px; margin-bottom: 2rem; border: 1px solid #e2e8f0;">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h3 style="margin: 0; color: #1e3a5f; font-size: 1.1rem;">📊 نشاط الدعم خلال اليوم (توزيع
+                                بالساعات)</h3>
+                        </div>
+                        <div style="height: 300px; width: 100%;">
+                            <canvas id="supportActivityChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Filters -->
+                    <div class="filter-toolbar-modern"
+                        style="display: flex; gap: 1rem; margin-bottom: 2rem; flex-wrap: wrap;">
+                        <div style="flex: 2; min-width: 250px; position: relative;">
+                            <i class="fas fa-search"
+                                style="position: absolute; right: 1rem; top: 50%; transform: translateY(-50%); color: #94a3b8;"></i>
+                            <input type="text" id="activitySearchInput" placeholder="ابحث في النشاط..."
+                                onkeyup="filterSupportActivity()"
+                                style="width: 100%; padding: 0.8rem 2.8rem 0.8rem 1rem; border: 2px solid #e2e8f0; border-radius: 12px; font-size: 1rem;">
+                        </div>
+                        <select id="activityAdminFilter" onchange="filterSupportActivity()"
+                            style="flex: 1; min-width: 150px; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 12px; background: white; font-weight: 600;">
+                            <option value="">جميع الأعضاء</option>
+                        </select>
+                        <select id="activityDateFilter" onchange="filterSupportActivity()"
+                            style="flex: 1; min-width: 150px; padding: 0.8rem; border: 2px solid #e2e8f0; border-radius: 12px; background: white; font-weight: 600;">
+                            <option value="all">كل الفترات</option>
+                            <option value="today">اليوم</option>
+                            <option value="week">هذا الأسبوع</option>
+                            <option value="month">هذا الشهر</option>
+                        </select>
+                    </div>
+
+                    <!-- Activity Table -->
+                    <div class="data-card-modern">
+                        <div id="supportActivityContainer">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Logs Tab -->
+                <div id="logsTab" class="tab-content">
+                    <div class="filter-section">
+                        <div class="filter-item">
+                            <label>نوع النشاط</label>
+                            <select id="logTypeFilter" onchange="filterLogs()">
+                                <option value="">الكل</option>
+                                <option value="auth">تسجيل دخول/خروج</option>
+                                <option value="order">طلبات</option>
+                                <option value="system">نظام</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="logsContainer">
+                        <!-- Logs table will be loaded here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Coupon Modal -->
+    <div id="addCouponModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>إضافة كوبون جديد</h2>
+            <form id="addCouponForm">
+                <div class="form-group">
+                    <label>رمز الكوبون *</label>
+                    <input type="text" name="code" required placeholder="مثال: SAVE20">
+                </div>
+                <div class="form-group">
+                    <label>قيمة الخصم *</label>
+                    <input type="number" name="discount" required>
+                </div>
+                <div class="form-group">
+                    <label>نوع الخصم *</label>
+                    <select name="type">
+                        <option value="percent">نسبة مئوية (%)</option>
+                        <option value="fixed">مبلغ ثابت</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>تاريخ الانتهاء *</label>
+                    <input type="date" name="expiry" required>
+                </div>
+                <div class="form-group">
+                    <label>الحالة</label>
+                    <select name="status">
+                        <option value="active">نشط</option>
+                        <option value="inactive">غير نشط</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">حفظ الكوبون</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Testimonial Modal -->
+    <div id="addTestimonialModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h2>إضافة رأي عميل</h2>
+            <form id="addTestimonialForm">
+                <div class="form-group">
+                    <label>اسم العميل *</label>
+                    <input type="text" name="clientName" required>
+                </div>
+                <div class="form-group">
+                    <label>المنصب / الشركة</label>
+                    <input type="text" name="clientRole">
+                </div>
+                <div class="form-group">
+                    <label>نص الرأي *</label>
+                    <textarea name="content" rows="4" required></textarea>
+                </div>
+                <button type="submit" class="btn-primary" style="width: 100%;">حفظ الرأي</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Audio for notifications -->
+    <audio id="notificationSound" preload="auto">
+        <source src="notification.mp3" type="audio/mpeg">
+    </audio>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
+    <!-- EmailJS (Add your keys here from https://dashboard.emailjs.com/) -->
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+    <script type="text/javascript">
+        (function () {
+            // قم بوضع PUBLIC_KEY الخاص بك هنا لكي يعمل الإرسال الفعلي
+            emailjs.init("rxEUCMR5BUJNKDeEe");
+        })();
+    </script>
+
+    <!-- Custom Scripts -->
+    <script src="firebase-config.js"></script>
+    <script src="firebase-init.js"></script>
+    <script src="admin-permissions.js"></script>
+    <script src="social-media-manager.js"></script>
+
+    <!-- Chat Widget -->
+    <button id="chatWidgetBtn" class="chat-widget-btn">
+        <i class="fas fa-comments"></i>
+        <span id="chatNotificationBadge" class="chat-notification-badge" style="display: none;">0</span>
+    </button>
+
+    <div id="chatWidgetWindow" class="chat-widget-window">
+        <!-- Header -->
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <h4>الدعم الفني المباشر</h4>
+                <p><span class="status-dot"></span> متواجدون الآن</p>
+            </div>
+            <div class="chat-header-actions">
+                <button id="closeChatBtn"><i class="fas fa-times"></i></button>
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div id="chatMessages" class="chat-body">
+            <div class="chat-message support-message">
+                <div class="message-content">مرحباً! معك فريق الدعم الفني. كيف يمكننا مساعدتك اليوم؟</div>
+                <div class="message-time">الآن</div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="chat-footer">
+            <input type="text" id="chatMessageInput" class="chat-input" placeholder="اكتب رسالتك هنا...">
+            <button id="sendMessageBtn" class="send-btn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script src="settings.js"></script>
+    <script src="admin.js"></script>
+    <script src="admin-chat.js"></script>
+</body>
+
+</html>

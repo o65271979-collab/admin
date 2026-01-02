@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل دخول الإدارة - AS3G SYSTEM</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --primary-glow: rgba(30, 58, 138, 0.4);
+            --glass-bg: rgba(255, 255, 255, 0.75);
+            --glass-border: rgba(255, 255, 255, 0.5);
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Cairo', sans-serif;
+            min-height: 100vh;
+            background: #0f172a;
+            overflow-x: hidden;
+        }
+
+        /* Mesh Background */
+        .mesh-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            background: #0f172a;
+        }
+
+        .mesh-shape {
+            position: absolute;
+            filter: blur(100px);
+            opacity: 0.5;
+            animation: meshFlow 25s infinite alternate ease-in-out;
+        }
+
+        .shape-1 {
+            width: 700px;
+            height: 700px;
+            background: #3b82f6;
+            top: -10%;
+            left: -10%;
+        }
+
+        .shape-2 {
+            width: 600px;
+            height: 600px;
+            background: #1e3a8a;
+            bottom: -10%;
+            right: -10%;
+            animation-delay: -5s;
+        }
+
+        .shape-3 {
+            width: 500px;
+            height: 500px;
+            background: #8b5cf6;
+            top: 40%;
+            left: 30%;
+            animation-delay: -12s;
+        }
+
+        @keyframes meshFlow {
+            0% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            100% {
+                transform: translate(80px, 40px) scale(1.1);
+            }
+        }
+
+        .admin-login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .admin-login-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border: 1px solid var(--glass-border);
+            border-radius: 32px;
+            padding: 3.5rem;
+            width: 100%;
+            max-width: 480px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            animation: cardAppear 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            text-align: center;
+        }
+
+        @keyframes cardAppear {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .admin-logo {
+            width: 72px;
+            height: 72px;
+            background: white;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            font-size: 2.2rem;
+            color: #2563eb;
+            transform: rotate(-5deg);
+        }
+
+        .admin-title {
+            font-size: 2.2rem;
+            color: var(--text-main);
+            margin-bottom: 0.5rem;
+            font-weight: 800;
+        }
+
+        .admin-subtitle {
+            color: var(--text-muted);
+            margin-bottom: 2.5rem;
+            font-weight: 600;
+        }
+
+        .security-notice {
+            background: rgba(254, 243, 199, 0.5);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+            border-radius: 14px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            font-size: 0.9rem;
+            color: #92400e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+            text-align: right;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.6rem;
+            font-weight: 700;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            padding-right: 0.5rem;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-wrapper i {
+            position: absolute;
+            right: 1.2rem;
+            color: var(--text-muted);
+            transition: color 0.3s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            padding: 1.1rem 3.4rem 1.1rem 1.2rem;
+            background: rgba(255, 255, 255, 0.9);
+            border: 1.5px solid #e2e8f0;
+            border-radius: 16px;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.3s;
+            color: var(--text-main);
+        }
+
+        .input-wrapper input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: #fff;
+            box-shadow: 0 0 0 4px var(--primary-glow);
+        }
+
+        .input-wrapper input:focus+i {
+            color: #3b82f6;
+        }
+
+        .admin-login-btn {
+            width: 100%;
+            background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+            color: white;
+            border: none;
+            padding: 1.2rem;
+            border-radius: 16px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 15px -3px rgba(30, 58, 138, 0.3);
+            font-family: 'Cairo', sans-serif;
+        }
+
+        .admin-login-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 20px 25px -5px rgba(30, 58, 138, 0.4);
+            filter: brightness(1.1);
+        }
+
+        .back-to-site {
+            margin-top: 2.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid rgba(0, 0, 0, 0.05);
+        }
+
+        .back-to-site a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 700;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: color 0.3s;
+        }
+
+        .back-to-site a:hover {
+            color: #2563eb;
+        }
+
+        .loading {
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .error-message,
+        .success-message {
+            border-radius: 14px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            animation: slideDown 0.4s ease-out;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fee2e2;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            color: #15803d;
+            border: 1px solid #dcfce7;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .admin-login-card {
+                padding: 2.5rem 1.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Mesh Background -->
+    <div class="mesh-bg">
+        <div class="mesh-shape shape-1"></div>
+        <div class="mesh-shape shape-2"></div>
+        <div class="mesh-shape shape-3"></div>
+    </div>
+
+    <div class="admin-login-container">
+        <div class="admin-login-card">
+            <div class="admin-logo">
+                <i class="fas fa-shield-alt"></i>
+            </div>
+
+            <h1 class="admin-title">لوحة التحكم</h1>
+            <p class="admin-subtitle">AS3G SYSTEM - الإدارة العليا</p>
+
+            <div class="security-notice">
+                <i class="fas fa-exclamation-shield"></i>
+                <span>تنبيه: هذه المنطقة مخصصة للمديرين المعتمدين فقط</span>
+            </div>
+
+            <div id="messageContainer"></div>
+
+            <form id="adminLoginForm">
+                <div class="form-group">
+                    <label for="adminEmail">البريد الإلكتروني للإدارة</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-envelope"></i>
+                        <input type="email" id="adminEmail" name="email" required placeholder="admin@as3g.com">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="adminPassword">كلمة المرور</label>
+                    <div class="input-wrapper">
+                        <i class="fas fa-lock"></i>
+                        <input type="password" id="adminPassword" name="password" required placeholder="••••••••">
+                    </div>
+                </div>
+
+                <button type="submit" class="admin-login-btn">
+                    <span class="btn-text">
+                        دخول النظام <i class="fas fa-sign-in-alt"></i>
+                    </span>
+                    <span class="loading" style="display: none;"></span>
+                </button>
+            </form>
+
+            <div class="back-to-site">
+                <a href="../index.html">
+                    <span>العودة للموقع الرئيسي</span>
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Check if user is already logged in and is admin
+            auth.onAuthStateChanged(async (user) => {
+                if (user) {
+                    const isAdmin = await FirebaseUtils.isAdmin(user.uid);
+                    if (isAdmin) {
+                        window.location.href = 'admin.html';
+                    }
+                }
+            });
+
+            const adminLoginForm = document.getElementById('adminLoginForm');
+            adminLoginForm.addEventListener('submit', handleAdminLogin);
+        });
+
+        async function handleAdminLogin(e) {
+            e.preventDefault();
+            const form = e.target;
+            const submitBtn = form.querySelector('.admin-login-btn');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const loading = submitBtn.querySelector('.loading');
+
+            btnText.style.display = 'none';
+            loading.style.display = 'inline-block';
+            submitBtn.disabled = true;
+
+            const email = form.email.value;
+            const password = form.password.value;
+
+            try {
+                const result = await FirebaseUtils.signInWithEmail(email, password);
+                if (result.success) {
+                    const isAdmin = await FirebaseUtils.isAdmin(result.user.uid);
+                    if (isAdmin) {
+                        showMessage('تم تسجيل الدخول بنجاح!', 'success');
+                        setTimeout(() => { window.location.href = 'admin.html'; }, 1000);
+                    } else {
+                        await FirebaseUtils.signOut();
+                        throw new Error('ليس لديك صلاحيات إدارية');
+                    }
+                } else {
+                    throw new Error(result.error);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                showMessage(error.message || 'حدث خطأ في الدخول', 'error');
+            } finally {
+                btnText.style.display = 'inline-flex';
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showMessage(message, type = 'info') {
+            const container = document.getElementById('messageContainer');
+            container.innerHTML = `<div class="${type}-message">${message}</div>`;
+            setTimeout(() => { container.innerHTML = ''; }, 5000);
+        }
+    </script>
+</body>
+
+</html>

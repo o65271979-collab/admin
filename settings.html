@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إعدادات النظام - AS3G SYSTEM</title>
+    <link rel="stylesheet" href="../style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .settings-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .settings-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .settings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .settings-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
+        }
+
+        .settings-card h3 {
+            color: #2c5aa0;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .settings-option {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid #f1f3f4;
+        }
+
+        .settings-option:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 60px;
+            height: 30px;
+            background: #ccc;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            top: 3px;
+            left: 3px;
+            width: 24px;
+            height: 24px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .toggle-switch.active::after {
+            left: 33px;
+        }
+
+        .backup-section {
+            background: #f8f9fa;
+            padding: 2rem;
+            border-radius: 15px;
+            margin: 2rem 0;
+        }
+
+        .backup-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .backup-btn {
+            padding: 1rem;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .backup-btn.primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .backup-btn.success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+        }
+
+        .backup-btn.warning {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+        }
+
+        .language-selector {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .lang-option {
+            padding: 0.8rem 1.5rem;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .lang-option.active {
+            border-color: #667eea;
+            background: #667eea;
+            color: white;
+        }
+
+        .theme-options {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .theme-option {
+            width: 80px;
+            height: 60px;
+            border: 3px solid #e9ecef;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-option.active {
+            border-color: #667eea;
+        }
+
+        .theme-light {
+            background: linear-gradient(45deg, #ffffff 50%, #f8f9fa 50%);
+        }
+
+        .theme-dark {
+            background: linear-gradient(45deg, #2c3e50 50%, #34495e 50%);
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e9ecef;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 1rem 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 8px;
+            margin: 1rem 0;
+            display: none;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .status-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="settings-container">
+        <div class="settings-header">
+            <h1><i class="fas fa-cogs"></i> إعدادات النظام</h1>
+            <p>إدارة إعدادات النظام والنسخ الاحتياطي</p>
+        </div>
+
+        <div class="settings-grid">
+            <!-- إعدادات العامة -->
+            <div class="settings-card">
+                <h3><i class="fas fa-globe"></i> الإعدادات العامة</h3>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>اللغة</strong>
+                        <p>اختر لغة النظام</p>
+                    </div>
+                    <div class="language-selector">
+                        <div class="lang-option active" onclick="changeLanguage('ar')">
+                            <i class="fas fa-flag"></i> العربية
+                        </div>
+                        <div class="lang-option" onclick="changeLanguage('en')">
+                            <i class="fas fa-flag"></i> English
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>المظهر</strong>
+                        <p>اختر مظهر النظام</p>
+                    </div>
+                    <div class="theme-options">
+                        <div class="theme-option theme-light active" onclick="changeTheme('light')"
+                            title="المظهر الفاتح"></div>
+                        <div class="theme-option theme-dark" onclick="changeTheme('dark')" title="المظهر الداكن"></div>
+                    </div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>الإشعارات</strong>
+                        <p>تفعيل إشعارات النظام</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this, 'notifications')"></div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>الأصوات</strong>
+                        <p>تفعيل أصوات التنبيهات</p>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this, 'sounds')"></div>
+                </div>
+            </div>
+
+            <!-- إعدادات الأمان -->
+            <div class="settings-card">
+                <h3><i class="fas fa-shield-alt"></i> إعدادات الأمان</h3>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>المصادقة الثنائية</strong>
+                        <p>تأمين إضافي للحساب</p>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this, 'twoFactor')"></div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>تسجيل العمليات</strong>
+                        <p>حفظ سجل جميع العمليات</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this, 'auditLog')"></div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>انتهاء الجلسة</strong>
+                        <p>انتهاء تلقائي بعد عدم النشاط</p>
+                    </div>
+                    <select class="form-control" onchange="updateSetting('sessionTimeout', this.value)">
+                        <option value="30">30 دقيقة</option>
+                        <option value="60" selected>60 دقيقة</option>
+                        <option value="120">120 دقيقة</option>
+                        <option value="0">بدون انتهاء</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- إعدادات الأداء -->
+            <div class="settings-card">
+                <h3><i class="fas fa-tachometer-alt"></i> إعدادات الأداء</h3>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>التخزين المؤقت</strong>
+                        <p>تحسين سرعة التحميل</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this, 'caching')"></div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>ضغط البيانات</strong>
+                        <p>تقليل استهلاك البيانات</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this, 'compression')"></div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>التحديث التلقائي</strong>
+                        <p>تحديث البيانات تلقائياً</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this, 'autoRefresh')"></div>
+                </div>
+            </div>
+
+            <!-- إعدادات البيانات -->
+            <div class="settings-card">
+                <h3><i class="fas fa-database"></i> إعدادات البيانات</h3>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>النسخ الاحتياطي التلقائي</strong>
+                        <p>نسخ احتياطي يومي للبيانات</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="toggleSetting(this, 'autoBackup')"></div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>مزامنة البيانات</strong>
+                        <p>مزامنة مع الخوادم الخارجية</p>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSetting(this, 'dataSync')"></div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>تنظيف البيانات</strong>
+                        <p>حذف البيانات القديمة تلقائياً</p>
+                    </div>
+                    <select class="form-control" onchange="updateSetting('dataCleanup', this.value)">
+                        <option value="0">معطل</option>
+                        <option value="30">بعد 30 يوم</option>
+                        <option value="90" selected>بعد 90 يوم</option>
+                        <option value="365">بعد سنة</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- إعدادات الأمان المتقدمة -->
+            <div class="settings-card">
+                <h3><i class="fas fa-user-shield"></i> الأمان المتقدم</h3>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>القائمة البيضاء (IP Whitelist)</strong>
+                        <p>السماح بالدخول فقط من عناوين IP محددة</p>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSecuritySetting(this, 'ipWhitelistEnabled')"></div>
+                </div>
+
+                <div id="ipWhitelistSection"
+                    style="display: none; background: #f8f9fa; padding: 1rem; border-radius: 8px; margin-top: 1rem;">
+                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                        <input type="text" id="newIpInput" placeholder="أدخل عنوان IP (مثال: 192.168.1.1)"
+                            class="form-control"
+                            style="flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;">
+                        <button onclick="addIpToWhitelist()" class="backup-btn primary"
+                            style="padding: 0.5rem 1rem; font-size: 0.9rem;">إضافة</button>
+                        <button onclick="addCurrentIp()" class="backup-btn success"
+                            style="padding: 0.5rem 1rem; font-size: 0.9rem;" title="إضافة IP الحالي"><i
+                                class="fas fa-map-marker-alt"></i></button>
+                    </div>
+                    <div id="ipList" style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                        <!-- IPs will be loaded here -->
+                    </div>
+                </div>
+
+                <div class="settings-option">
+                    <div>
+                        <strong>سياسة تغيير كلمة المرور</strong>
+                        <p>إجبار تغيير كلمة المرور دورياً</p>
+                    </div>
+                    <div class="toggle-switch" onclick="toggleSecuritySetting(this, 'passwordRotationEnabled')"></div>
+                </div>
+
+                <div id="passwordRotationSection" style="display: none; padding-top: 1rem;">
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 0.5rem;">تغيير كلمة المرور كل:</label>
+                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                            <input type="number" id="passwordRotationDays" value="90" min="30" class="form-control"
+                                style="width: 100px; padding: 0.5rem; border: 1px solid #ddd; border-radius: 6px;"
+                                onchange="updateSecuritySetting('passwordRotationDays', this.value)">
+                            <span>يوم</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- قسم النسخ الاحتياطي -->
+        <div class="backup-section">
+            <h2><i class="fas fa-cloud-download-alt"></i> النسخ الاحتياطي واستيراد البيانات</h2>
+            <p>إدارة النسخ الاحتياطية واستيراد/تصدير البيانات</p>
+
+            <div class="progress-bar" id="backupProgress" style="display: none;">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+
+            <div class="status-message" id="statusMessage"></div>
+
+            <div class="backup-actions">
+                <button class="backup-btn primary" onclick="createBackup()">
+                    <i class="fas fa-download"></i>
+                    إنشاء نسخة احتياطية
+                </button>
+
+                <button class="backup-btn success" onclick="document.getElementById('importFile').click()">
+                    <i class="fas fa-upload"></i>
+                    استيراد البيانات
+                </button>
+
+                <button class="backup-btn warning" onclick="exportData()">
+                    <i class="fas fa-file-export"></i>
+                    تصدير البيانات
+                </button>
+
+                <button class="backup-btn primary" onclick="viewBackupHistory()">
+                    <i class="fas fa-history"></i>
+                    سجل النسخ الاحتياطية
+                </button>
+
+                <button class="backup-btn success" onclick="restoreFromBackup()">
+                    <i class="fas fa-undo"></i>
+                    استعادة من نسخة احتياطية
+                </button>
+
+                <button class="backup-btn warning" onclick="cleanupOldBackups()">
+                    <i class="fas fa-trash-alt"></i>
+                    تنظيف النسخ القديمة
+                </button>
+            </div>
+
+            <input type="file" id="importFile" accept=".json,.csv" style="display: none;"
+                onchange="handleFileImport(this)">
+        </div>
+
+        <!-- أزرار الإجراءات -->
+        <div class="settings-actions" style="text-align: center; margin-top: 2rem;">
+            <button class="btn-primary" onclick="saveAllSettings()" style="margin: 0 0.5rem;">
+                <i class="fas fa-save"></i> حفظ جميع الإعدادات
+            </button>
+            <button class="btn-secondary" onclick="resetToDefaults()" style="margin: 0 0.5rem;">
+                <i class="fas fa-undo"></i> إعادة تعيين للافتراضي
+            </button>
+            <button class="btn-secondary" onclick="window.location.href='admin.html'" style="margin: 0 0.5rem;">
+                <i class="fas fa-arrow-right"></i> العودة للوحة الإدارة
+            </button>
+        </div>
+    </div>
+
+    <!-- Firebase Scripts -->
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-init.js"></script>
+    <script src="settings.js"></script>
+</body>
+
+</html>

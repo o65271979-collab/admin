@@ -1,0 +1,1134 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إدارة نظام AS3G</title>
+    <!-- Admin Styling -->
+    <link rel="stylesheet" href="../admin.css">
+
+    <!-- Fonts and Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+    <!-- Custom Style Overrides if needed for specific dashboard elements -->
+    <style>
+        /* Preserve some specific styles from original if needed, but mostly relying on admin.css */
+        .tab-content {
+            display: none;
+        }
+
+        /* Fix for removed header and white box issue */
+        .admin-main,
+        .admin-content {
+            padding-top: 10px !important;
+            margin-top: 0 !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            display: block !important;
+            /* Force block layout to avoid centering */
+            min-height: auto !important;
+            /* Allow it to shrink */
+        }
+
+        .tab-content {
+            display: none;
+            padding-top: 0 !important;
+            margin-top: 0 !important;
+        }
+
+        .tab-content h2 {
+            margin-top: 0 !important;
+        }
+
+        /* Button Icons Fix */
+        .btn-icon {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 2px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+        }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn-icon i {
+            pointer-events: none;
+            /* Icon shouldn't block clicks */
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* Professional Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 2000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.7);
+            /* Deep slate with transparency */
+            backdrop-filter: blur(8px);
+            /* Glassmorphism */
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 0;
+            border-radius: 20px;
+            width: 95%;
+            max-width: 550px;
+            position: relative;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .modal-header {
+            padding: 1.5rem 2rem;
+            background: #f8fafc;
+            border-bottom: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            color: #1e293b;
+            font-size: 1.25rem;
+            font-weight: 700;
+        }
+
+        .modal-body {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .modal-footer {
+            padding: 1.5rem 2rem;
+            background: #f8fafc;
+            border-top: 1px solid #f1f5f9;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-family: 'Cairo', sans-serif;
+            transition: all 0.2s ease;
+            color: #1e293b;
+            background: #ffffff;
+            box-sizing: border-box;
+            /* Crucial for width: 100% */
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+            background: #fff;
+        }
+
+        .form-control:disabled {
+            background-color: #f8fafc;
+            cursor: not-allowed;
+            color: #94a3b8;
+        }
+
+        .close-modal {
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #94a3b8;
+            transition: color 0.2s;
+            line-height: 1;
+        }
+
+        .close-modal:hover {
+            color: #ef4444;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes popIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        /* Button Enhancements */
+        .btn-primary,
+        .btn-secondary {
+            padding: 10px 24px;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Cairo', sans-serif;
+            border: none;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #64748b;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="admin-container">
+        <!-- Mobile Header (Visible only on small screens) -->
+        <div class="mobile-top-bar" id="mobileTopBar">
+            <span class="mobile-logo">نظام AS3G</span>
+            <button id="sidebarToggle" class="sidebar-toggle-btn">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- Sidebar Overlay (Backdrop for mobile) -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+        <!-- Sidebar -->
+        <div class="admin-sidebar" id="adminSidebar">
+            <div class="sidebar-header">
+                <h2><i class="fas fa-server"></i> نظام AS3G</h2>
+                <p id="adminEmail">جاري التحميل...</p>
+            </div>
+
+            <nav class="sidebar-menu">
+                <!-- Return to Main Admin -->
+                <a href="../admin.html" class="menu-item"
+                    style="color: #64748b; border-bottom: 1px solid rgba(255,255,255,0.1); margin-bottom: 1rem;">
+                    <i class="fas fa-arrow-right"></i>
+                    عودة للوحة الرئيسية
+                </a>
+
+                <button class="menu-item active tab-btn" data-tab="statistics">
+                    <i class="fas fa-tachometer-alt"></i>
+                    الإحصائيات
+                </button>
+                <button class="menu-item tab-btn" data-tab="payments">
+                    <i class="fas fa-file-invoice-dollar"></i>
+                    المدفوعات
+                </button>
+                <button class="menu-item tab-btn" data-tab="codes">
+                    <i class="fas fa-key"></i>
+                    أكواد التفعيل
+                </button>
+                <button class="menu-item tab-btn" data-tab="devices">
+                    <i class="fas fa-desktop"></i>
+                    الأجهزة المفعلة
+                </button>
+                <button class="menu-item tab-btn" data-tab="plans">
+                    <i class="fas fa-tags"></i>
+                    الباقات
+                </button>
+                <button class="menu-item tab-btn" data-tab="messages">
+                    <i class="fas fa-envelope"></i>
+                    الرسائل
+                </button>
+                <button class="menu-item tab-btn" data-tab="expiry">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    تنبيهات الانتهاء
+                </button>
+                <button class="menu-item tab-btn" data-tab="reports">
+                    <i class="fas fa-chart-bar"></i>
+                    التقارير
+                </button>
+                <button class="menu-item tab-btn" data-tab="settings">
+                    <i class="fas fa-cog"></i>
+                    الإعدادات والنسخ الاحتياطي
+                </button>
+
+                <button class="menu-item" id="logoutBtn"
+                    style="margin-top: 2rem; border-top: 1px solid #34495e; color: #e74c3c;">
+                    <i class="fas fa-sign-out-alt"></i>
+                    تسجيل الخروج
+                </button>
+            </nav>
+        </div>
+
+        <!-- Main Content -->
+        <div class="admin-main" id="adminMain">
+
+
+            <div class="admin-content">
+
+                <!-- Statistics Tab -->
+                <div id="statisticsTab" class="tab-content active">
+                    <h2 style="color: #2c3e50; margin-bottom: 1.5rem;">لوحة الإحصائيات العامة</h2>
+
+                    <!-- Stats Grid (Visible always or just on top) -->
+                    <div class="stats-grid" style="margin-bottom: 2rem;">
+                        <div class="stat-card" style="border-right: 5px solid #3498db;">
+                            <i class="fas fa-box" style="color: #3498db;"></i>
+                            <div class="stat-info">
+                                <h3 id="totalCodes" class="stat-number">0</h3>
+                                <p class="stat-label">إجمالي الأكواد</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="border-right: 5px solid #2ecc71;">
+                            <i class="fas fa-check" style="color: #2ecc71;"></i>
+                            <div class="stat-info">
+                                <h3 id="usedCodes" class="stat-number">0</h3>
+                                <p class="stat-label">الأكواد المستخدمة</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="border-right: 5px solid #f1c40f;">
+                            <i class="fas fa-mobile-alt" style="color: #f1c40f;"></i>
+                            <div class="stat-info">
+                                <h3 id="activeDevices" class="stat-number">0</h3>
+                                <p class="stat-label">الأجهزة المفعلة</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="border-right: 5px solid #d35400;">
+                            <i class="fas fa-money-check-alt" style="color: #d35400;"></i>
+                            <div class="stat-info">
+                                <h3 id="expectedPayments" class="stat-number">0 EGP</h3>
+                                <p class="stat-label">دفعات متوقعة (30 يوم)</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Section -->
+                    <div
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+                        <div
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                            <h3 style="margin-bottom: 1rem; color: #1e3a5f; font-size: 1.1rem;"><i
+                                    class="fas fa-chart-pie"></i> حالة الأكواد</h3>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="codesChart"></canvas>
+                            </div>
+                        </div>
+                        <div
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                            <h3 style="margin-bottom: 1rem; color: #1e3a5f; font-size: 1.1rem;"><i
+                                    class="fas fa-code-branch"></i> توزيع النسخ (Online/Offline)</h3>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="versionChart"></canvas>
+                            </div>
+                        </div>
+                        <div
+                            style="background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                            <h3 style="margin-bottom: 1rem; color: #1e3a5f; font-size: 1.1rem;"><i
+                                    class="fas fa-heartbeat"></i> حالة الأجهزة</h3>
+                            <div style="height: 250px; position: relative;">
+                                <canvas id="statusChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Payments Tab -->
+                <div id="paymentsTab" class="tab-content">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="color: #2c3e50;">سجل المدفوعات والمعاملات</h2>
+                        <button class="btn-secondary" onclick="exportPayments()">
+                            <i class="fas fa-file-export"></i> تصدير البيانات
+                        </button>
+                    </div>
+
+                    <div class="filter-section" style="margin-bottom: 1.5rem;">
+                        <div class="filter-item">
+                            <label>بحث عام</label>
+                            <input type="text" id="paymentsSearchInput" placeholder="بحث باسم العميل، الكود...">
+                        </div>
+                        <div class="filter-item">
+                            <label>من تاريخ</label>
+                            <input type="date" id="paymentDateFrom">
+                        </div>
+                        <div class="filter-item">
+                            <label>إلى تاريخ</label>
+                            <input type="date" id="paymentDateTo">
+                        </div>
+                        <button class="btn-primary" onclick="loadPayments()" style="height: 42px; margin-top: 24px;">
+                            <i class="fas fa-filter"></i> تطبيق
+                        </button>
+                    </div>
+
+                    <div class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>تاريخ المعاملة</th>
+                                    <th>اسم العميل</th>
+                                    <th>الكود</th>
+                                    <th>الباقة</th>
+                                    <th>المبلغ</th>
+                                    <th>المسؤول</th>
+                                </tr>
+                            </thead>
+                            <tbody id="paymentsTableBody">
+                                <tr>
+                                    <td colspan="6" class="loading">جاري التحميل...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Codes Tab -->
+                <div id="codesTab" class="tab-content">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                        <h2 style="color: #2c3e50;">إدارة أكواد التفعيل</h2>
+                        <button id="generateCodeBtn" class="btn-primary">
+                            <i class="fas fa-plus"></i> إنشاء كود جديد
+                        </button>
+                    </div>
+
+                    <!-- Advanced Filters -->
+                    <div class="filter-section" style="margin-bottom: 1.5rem;">
+                        <div class="filter-item">
+                            <label>بحث عام</label>
+                            <input type="text" id="codesSearchInput" placeholder="بحث باسم العميل، الكود، الهاتف...">
+                        </div>
+                        <div class="filter-item">
+                            <label>نوع النسخة</label>
+                            <select id="filterVersion">
+                                <option value="all">الكل</option>
+                                <option value="online">Online</option>
+                                <option value="offline">Offline</option>
+                            </select>
+                        </div>
+                        <div class="filter-item">
+                            <label>الحالة</label>
+                            <select id="filterStatus">
+                                <option value="all">الكل</option>
+                                <option value="active">نشط (مستخدم)</option>
+                                <option value="new">جديد (غير مستخدم)</option>
+                            </select>
+                        </div>
+                        <button class="btn-primary" onclick="loadCodes()" style="height: 42px; margin-top: 24px;">
+                            <i class="fas fa-filter"></i> تطبيق
+                        </button>
+                    </div>
+
+                    <div id="codesTable" class="data-table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>الكود</th>
+                                    <th>اسم العميل</th>
+                                    <th>المكان</th>
+                                    <th>التليفون</th>
+                                    <th>النسخة</th>
+                                    <th>الحالة</th>
+                                    <th>المدة (يوم)</th>
+                                    <th>تاريخ التفعيل</th>
+                                    <th>الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="codesTableBody">
+                                <tr>
+                                    <td colspan="9" class="loading">جاري التحميل...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Devices Tab -->
+            <div id="devicesTab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="color: #2c3e50;">الأجهزة المفعلة</h2>
+                    <button class="btn-secondary" onclick="fixDeviceNames()">
+                        <i class="fas fa-wrench"></i> تصحيح الأسماء
+                    </button>
+                </div>
+
+                <!-- Quick Stats Devices -->
+                <!-- Keeping the IDs for js population -->
+                <div
+                    style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-bottom: 2rem; display: none;">
+                    <!-- Hidden but IDs preserved if needed by JS stats logic that might error if missing, 
+                              though existing stats grid at top covers most. 
+                              Let's keep them if specific IDs are updated by JS. 
+                              The JS updates: activeDevicesCount, stoppedDevicesCount, expiredDevicesCount, avgDaysLeft.
+                              I will add a small summary bar for these.
+                          -->
+                    <span id="activeDevicesCount" style="display:none">0</span>
+                    <span id="stoppedDevicesCount" style="display:none">0</span>
+                    <span id="expiredDevicesCount" style="display:none">0</span>
+                    <span id="avgDaysLeft" style="display:none">0</span>
+                </div>
+
+                <div class="filter-section">
+                    <div class="filter-item">
+                        <label>البحث</label>
+                        <input type="text" id="devicesSearch" placeholder="🔍 ابحث عن جهاز أو كود..." />
+                    </div>
+                    <div class="filter-item">
+                        <label>فرز</label>
+                        <div class="filter-buttons" style="display: flex; gap: 0.5rem;">
+                            <button class="btn-secondary active filter-btn" data-filter="all">الكل</button>
+                            <button class="btn-secondary filter-btn" data-filter="active">نشط</button>
+                            <button class="btn-secondary filter-btn" data-filter="stopped">متوقف</button>
+                            <button class="btn-secondary filter-btn" data-filter="expired">منتهي</button>
+                        </div>
+                    </div>
+                    <div class="filter-item">
+                        <label>ترتيب حسب</label>
+                        <select id="devicesSort">
+                            <option value="activatedAt-desc">الأحدث تفعيلاً</option>
+                            <option value="activatedAt-asc">الأقدم تفعيلاً</option>
+                            <option value="expiresAt-asc">الأقرب انتهاءً</option>
+                            <option value="expiresAt-desc">الأبعد انتهاءً</option>
+                            <option value="daysLeft-asc">أقل أيام متبقية</option>
+                            <option value="daysLeft-desc">أكثر أيام متبقية</option>
+                            <option value="deviceName-asc">الاسم (أ-ي)</option>
+                            <option value="deviceName-desc">الاسم (ي-أ)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Bulk Actions -->
+                <div id="bulkActionsBar"
+                    style="display: none; background: #e0f2fe; padding: 1rem; border-radius: 8px; margin-bottom: 1rem; align-items: center; justify-content: space-between;">
+                    <div class="selected-count">
+                        <span id="selectedCount" style="font-weight: bold; color: #0369a1;">0</span> جهاز محدد
+                    </div>
+                    <div class="bulk-buttons" style="display: flex; gap: 0.5rem;">
+                        <button class="btn-primary" onclick="bulkStartDevices()" style="background: #10b981;">تشغيل
+                            الكل</button>
+                        <button class="btn-primary" onclick="bulkStopDevices()" style="background: #f59e0b;">إيقاف
+                            الكل</button>
+                        <button class="btn-primary" onclick="bulkDeleteDevices()" style="background: #ef4444;">حذف
+                            الكل</button>
+                        <button class="btn-secondary" onclick="exportSelectedDevices()">تصدير المحدد</button>
+                    </div>
+                </div>
+
+                <div id="devicesTable" class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAllDevices" /></th>
+                                <th style="width: 50px;">#</th>
+                                <th>اسم الجهاز</th>
+                                <th>كود التفعيل</th>
+                                <th>تاريخ التفعيل</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="devicesTableBody">
+                            <tr>
+                                <td colspan="8" class="loading">جاري التحميل...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <button class="btn-primary" onclick="exportAllDevices()">
+                        <i class="fas fa-file-download"></i> تصدير جميع الأجهزة
+                    </button>
+                </div>
+            </div>
+
+            <!-- Plans Tab -->
+            <div id="plansTab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="color: #2c3e50;">إدارة الباقات</h2>
+                    <button id="addPlanBtn" class="btn-primary">
+                        <i class="fas fa-plus"></i> إضافة باقة جديدة
+                    </button>
+                </div>
+
+                <div id="plansGrid" class="stats-grid">
+                    <!-- Plans will be loaded here -->
+                    <div class="stat-card loading-plans" style="grid-column: 1/-1; text-align: center;">جاري تحميل
+                        الباقات...</div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reportsTab" class="tab-content">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="color: #2c3e50; margin-bottom: 1rem;">التقارير المالية</h2>
+                    <div class="stats-grid">
+                        <div class="stat-card" style="border-right: 5px solid #27ae60;">
+                            <i class="fas fa-money-bill-wave" style="color: #27ae60;"></i>
+                            <div class="stat-info">
+                                <h3 id="totalRevenue" class="stat-number">0 EGP</h3>
+                                <p class="stat-label">إجمالي المبيعات</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="border-right: 5px solid #2980b9;">
+                            <i class="fas fa-calendar-check" style="color: #2980b9;"></i>
+                            <div class="stat-info">
+                                <h3 id="monthlyRevenue" class="stat-number">0 EGP</h3>
+                                <p class="stat-label">مبيعات هذا الشهر</p>
+                            </div>
+                        </div>
+                        <div class="stat-card" style="border-right: 5px solid #8e44ad;">
+                            <i class="fas fa-users" style="color: #8e44ad;"></i>
+                            <div class="stat-info">
+                                <h3 id="totalCustomersCount" class="stat-number">0</h3>
+                                <p class="stat-label">عدد العملاء</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-grid" style="margin-bottom: 3rem;">
+                    <!-- Top Customers -->
+                    <div style="background: white; border-radius: 10px; padding: 1.5rem; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 1rem; color: #1e3a5f;"><i class="fas fa-crown"
+                                style="color: #f1c40f;"></i> كبار العملاء (VIP)</h3>
+                        <div class="data-table-container" style="max-height: 300px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>العميل</th>
+                                        <th>الأكواد</th>
+                                        <th>الإجمالي</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="topCustomersBody">
+                                    <tr>
+                                        <td colspan="3" class="loading">جاري التحميل...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Recent Sales (Optional or another chart) - Let's keep it simple for now -->
+                </div>
+
+                <h2 style="color: #2c3e50; margin-bottom: 2rem; border-top: 1px solid #eee; padding-top: 2rem;">سجل
+                    النشاطات</h2>
+
+                <div class="filter-section">
+                    <div class="filter-item">
+                        <label>من تاريخ</label>
+                        <input type="date" id="logDateFrom">
+                    </div>
+                    <div class="filter-item">
+                        <label>إلى تاريخ</label>
+                        <input type="date" id="logDateTo">
+                    </div>
+                    <div class="filter-item">
+                        <label>المسؤول</label>
+                        <input type="text" id="logAdminFilter" placeholder="بحث بحساب الأدمن...">
+                    </div>
+                    <div class="filter-item">
+                        <label>الإجراء</label>
+                        <select id="logActionFilter">
+                            <option value="all">كل الإجراءات</option>
+                            <option value="إنشاء أكواد">إنشاء أكواد</option>
+                            <option value="حذف كود">حذف كود</option>
+                            <option value="إيقاف سيستم">إيقاف سيستم</option>
+                            <option value="تشغيل سيستم">تشغيل سيستم</option>
+                            <option value="حذف سيستم">حذف سيستم</option>
+                        </select>
+                    </div>
+                    <div class="filter-item" style="justify-content: flex-end;">
+                        <button id="applyLogFilters" class="btn-primary">تطبيق الفلتر</button>
+                    </div>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>التاريخ / الوقت</th>
+                                <th>حساب الأدمن</th>
+                                <th>نوع الإجراء</th>
+                                <th>التفاصيل</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportsTableBody">
+                            <tr>
+                                <td colspan="4" class="loading">جاري تحميل السجل...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Expiry Tab -->
+            <div id="expiryTab" class="tab-content">
+                <div style="margin-bottom: 2rem;">
+                    <h2 style="color: #c0392b; display: flex; align-items: center; gap: 10px;">
+                        <i class="fas fa-clock"></i> اشتراكات تنتهي قريباً (أقل من 7 أيام)
+                    </h2>
+                    <p style="color: #666; margin-top: 5px;">يمكنك إرسال تنبيهات واتساب أو تجديد الاشتراك مباشرة من هنا.
+                    </p>
+                </div>
+
+                <div class="data-table-container">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>اسم الجهاز</th>
+                                <th>العميل</th>
+                                <th>الهاتف</th>
+                                <th>تاريخ الانتهاء</th>
+                                <th>الأيام المتبقية</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody id="expiryTableBody">
+                            <tr>
+                                <td colspan="6" class="loading">جاري فحص الاشتراكات...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Messages Tab -->
+            <div id="messagesTab" class="tab-content">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <h2 style="color: #2c3e50;">الرسائل والإشعارات</h2>
+                    <button id="sendBroadcastBtn" class="btn-primary" style="background: #8e44ad;">
+                        <i class="fas fa-bullhorn"></i> إرسال إشعار عام
+                    </button>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+
+                    <!-- Notifications/Broadcasts History -->
+                    <div style="background: white; border-radius: 10px; padding: 1.5rem; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 1rem; color: #1e3a5f;"><i class="fas fa-history"></i> سجل
+                            الإشعارات المرسلة</h3>
+                        <div class="data-table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>العنوان</th>
+                                        <th>الرسالة</th>
+                                        <th>التاريخ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="notificationsHistoryBody">
+                                    <tr>
+                                        <td colspan="3" class="loading">جاري التحميل...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Direct Messages / Support Tickets (Simulated for AS3G) -->
+                    <div style="background: white; border-radius: 10px; padding: 1.5rem; border: 1px solid #e2e8f0;">
+                        <h3 style="margin-bottom: 1rem; color: #1e3a5f;"><i class="fas fa-inbox"></i> صندوق الوارد
+                        </h3>
+                        <div class="data-table-container" style="max-height: 400px; overflow-y: auto;">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>المرسل</th>
+                                        <th>الموضوع</th>
+                                        <th>الإجراء</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="messagesInboxBody">
+                                    <!-- Placeholder or filtered support tickets -->
+                                    <tr>
+                                        <td colspan="3" class="loading">لا توجد رسائل جديدة</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Settings & Backup Tab -->
+            <div id="settingsTab" class="tab-content">
+                <h2 style="color: #2c3e50; margin-bottom: 2rem;">الإعدادات والنسخ الاحتياطي</h2>
+
+                <div class="stats-grid">
+                    <!-- Backup Card -->
+                    <div class="stat-card" style="border-right: 5px solid #3498db; text-align: right;">
+                        <i class="fas fa-file-export" style="color: #3498db; font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">تصدير نسخة احتياطية</h3>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">قم بتحميل كافة بيانات
+                            النظام (الأكواد، الأجهزة، الباقات، السجلات) في ملف واحد للرجوع إليه عند الحاجة.</p>
+                        <button id="exportBackupBtn" class="btn-primary" style="width: 100%; justify-content: center;">
+                            <i class="fas fa-download"></i> تحميل النسخة الاحتياطية
+                        </button>
+                    </div>
+
+                    <!-- Import Card -->
+                    <div class="stat-card" style="border-right: 5px solid #e67e22; text-align: right;">
+                        <i class="fas fa-file-import" style="color: #e67e22; font-size: 2rem; margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">استيراد بيانات</h3>
+                        <p style="color: #64748b; font-size: 0.9rem; margin-bottom: 1.5rem;">اختر ملف النسخة الاحتياطية
+                            (JSON) لاستعادة البيانات. تنبيه: سيتم تحديث البيانات الموجودة وإضافة البيانات الجديدة.</p>
+
+                        <div style="display: flex; flex-direction: column; gap: 10px;">
+                            <input type="file" id="importFileInput" accept=".json" style="display: none;">
+                            <button onclick="document.getElementById('importFileInput').click()" class="btn-secondary"
+                                style="width: 100%; justify-content: center;">
+                                <i class="fas fa-folder-open"></i> اختيار ملف...
+                            </button>
+                            <button id="importBackupBtn" class="btn-primary"
+                                style="width: 100%; justify-content: center; background: #e67e22;">
+                                <i class="fas fa-upload"></i> بدء الاستيراد
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- System Stats Info -->
+                <div
+                    style="margin-top: 3rem; background: #f8fafc; padding: 2rem; border-radius: 20px; border: 1px solid #e2e8f0;">
+                    <h3 style="margin-bottom: 1.5rem; color: #1e3a5f;"><i class="fas fa-info-circle"></i> ملخص قاعدة
+                        البيانات</h3>
+                    <div id="systemDatabaseSummary"
+                        style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-weight: 700; color: #3498db;" id="count_codes">0</div>
+                            <div style="font-size: 0.85rem; color: #64748b;">كود تفعيل</div>
+                        </div>
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-weight: 700; color: #2ecc71;" id="count_devices">0</div>
+                            <div style="font-size: 0.85rem; color: #64748b;">جهاز مفعل</div>
+                        </div>
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-weight: 700; color: #f1c40f;" id="count_plans">0</div>
+                            <div style="font-size: 0.85rem; color: #64748b;">باقة اشتراك</div>
+                        </div>
+                        <div
+                            style="padding: 1rem; background: white; border-radius: 12px; border: 1px solid #e2e8f0; text-align: center;">
+                            <div style="font-weight: 700; color: #9b59b6;" id="count_logs">0</div>
+                            <div style="font-size: 0.85rem; color: #64748b;">سجل نشاط</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <!-- Renew Subscription Modal -->
+    <div id="renewModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تجديد الاشتراك</h3>
+                <span class="close-modal" onclick="closeRenewModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="renewDeviceId">
+                <input type="hidden" id="renewCustomerPhone">
+
+                <div style="text-align: center; margin-bottom: 1.5rem;">
+                    <div style="font-size: 3rem; color: #2ecc71; margin-bottom: 0.5rem;">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <p id="renewDeviceName" style="font-weight: bold; font-size: 1.1rem; color: #1e293b;"></p>
+                    <p style="color: #64748b;">اختر مدة التجديد المناسبة:</p>
+                </div>
+
+                <div class="form-group">
+                    <label>مدة التجديد</label>
+                    <select id="renewDuration" class="form-control">
+                        <option value="30">شهر (30 يوم)</option>
+                        <option value="90">3 شهور (90 يوم)</option>
+                        <option value="180">6 شهور (180 يوم)</option>
+                        <option value="365">سنة (365 يوم)</option>
+                        <option value="custom">-- مدة مخصصة --</option>
+                    </select>
+                </div>
+
+                <div id="customRenewDiv" class="form-group" style="display: none;">
+                    <label>المدة بالأيام</label>
+                    <input type="number" id="renewCustomDays" class="form-control" placeholder="أدخل عدد الأيام">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeRenewModal()">إلغاء</button>
+                <button class="btn-primary" onclick="confirmRenewal()" style="background: #27ae60;">تأكيد
+                    التجديد</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Device Modal -->
+    <div id="editDeviceModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تحديث بيانات الجهاز</h3>
+                <span class="close-modal" onclick="closeEditDeviceModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editDeviceId">
+
+                <div class="form-group">
+                    <label>اسم الجهاز (للعرض فقط)</label>
+                    <input type="text" id="editDeviceName" class="form-control" disabled>
+                </div>
+
+                <div class="form-group">
+                    <label>اسم العميل</label>
+                    <input type="text" id="editCustomerName" class="form-control" placeholder="أدخل اسم العميل">
+                </div>
+
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="text" id="editCustomerPhone" class="form-control" placeholder="أدخل رقم الهاتف">
+                </div>
+
+                <div class="form-group">
+                    <label>ملاحظات إضافية</label>
+                    <textarea id="editDeviceNotes" class="form-control" placeholder="أدخل أي ملاحظات..."
+                        rows="3"></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEditDeviceModal()">إلغاء</button>
+                <button class="btn-primary" onclick="saveDeviceChanges()">حفظ التغييرات</button>
+            </div>
+        </div>
+    </div>
+    <!-- Edit Code Modal -->
+    <div id="editCodeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>تعديل بيانات الكود</h3>
+                <span class="close-modal" onclick="closeEditCodeModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editCodeId">
+                <div class="form-group">
+                    <label>اسم العميل</label>
+                    <input type="text" id="editCustomerNameCode" class="form-control" placeholder="ادخل اسم العميل">
+                </div>
+                <div class="form-group">
+                    <label>رقم الهاتف</label>
+                    <input type="tel" id="editCustomerPhoneCode" class="form-control" placeholder="01XXXXXXXXX">
+                </div>
+                <div class="form-group">
+                    <label>الموقع / العنوان</label>
+                    <input type="text" id="editCustomerLocationCode" class="form-control"
+                        placeholder="مثال: فرع المعادي">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeEditCodeModal()">إلغاء</button>
+                <button class="btn-primary" onclick="saveCodeChanges()">حفظ التعديلات</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Generate Code Modal -->
+    <div id="generateModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إنشاء كود تفعيل جديد</h3>
+                <span class="close-modal"
+                    onclick="document.getElementById('generateModal').style.display='none'">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <!-- Select Plan -->
+                <div style="background: #f0f9ff; padding: 15px; border-radius: 12px; border: 1px dashed #bae6fd;">
+                    <label for="planSelect"
+                        style="display: block; margin-bottom: 0.5rem; font-weight: bold; color: #0284c7;">اختر باقة
+                        (اختياري)</label>
+                    <select id="planSelect" class="form-control">
+                        <option value="">-- تخصيص يدوي --</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>اسم العميل *</label>
+                    <input type="text" id="customerName" class="form-control" placeholder="أدخل اسم العميل" required>
+                </div>
+
+                <div class="form-group">
+                    <label>اسم المكان/الفرع *</label>
+                    <input type="text" id="customerLocation" class="form-control" placeholder="مثال: فرع المعادي"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>رقم التليفون *</label>
+                    <input type="tel" id="customerPhone" class="form-control" placeholder="01XXXXXXXXX" required>
+                </div>
+
+                <div class="form-group">
+                    <label>نسخة البرنامج *</label>
+                    <select id="versionType" class="form-control">
+                        <option value="offline" selected>نسخة أوفلاين (Offline)</option>
+                        <option value="online">نسخة أونلاين (Online)</option>
+                    </select>
+                </div>
+
+                <div id="manualFields" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="form-group">
+                        <label>مدة الاشتراك</label>
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
+                            <input type="checkbox" id="isLifetime" style="width: 18px; height: 18px; cursor: pointer;">
+                            <label for="isLifetime" style="margin: 0; cursor: pointer;">مدى الحياة (Lifetime)</label>
+                        </div>
+                        <input type="number" id="codeDuration" value="30" min="1" max="365" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label>عدد الأكواد المطلوبة</label>
+                        <input type="number" id="codeCount" value="1" min="1" max="10" class="form-control">
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary"
+                    onclick="document.getElementById('generateModal').style.display='none'">إلغاء</button>
+                <button id="confirmGenerateBtn" class="btn-primary">إنشاء</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Plan Modal -->
+    <div id="addPlanModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>إضافة باقة جديدة</h3>
+                <span class="close-modal"
+                    onclick="document.getElementById('addPlanModal').style.display='none'">&times;</span>
+            </div>
+
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>اسم الباقة *</label>
+                    <input type="text" id="planName" class="form-control" placeholder="مثال: باقة شهرية أونلاين"
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label>السعر (اختياري)</label>
+                    <input type="number" id="planPrice" class="form-control" placeholder="0">
+                </div>
+
+                <div class="form-group">
+                    <label>نوع النسخة</label>
+                    <select id="planVersionType" class="form-control">
+                        <option value="offline">نسخة أوفلاين</option>
+                        <option value="online">نسخة أونلاين</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>مدة الصلاحية</label>
+                    <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 5px;">
+                        <input type="checkbox" id="planIsLifetime" style="width: 18px; height: 18px; cursor: pointer;">
+                        <label for="planIsLifetime" style="margin: 0; cursor: pointer;">مدى الحياة (Lifetime)</label>
+                    </div>
+                    <input type="number" id="planDuration" value="30" class="form-control">
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button class="btn-secondary"
+                    onclick="document.getElementById('addPlanModal').style.display='none'">إلغاء</button>
+                <button id="savePlanBtn" class="btn-primary">حفظ الباقة</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase -->
+    <script type="module" src="firebase-config.js"></script>
+    <script src="security.js"></script>
+    <script type="module" src="dashboard.js"></script>
+
+    <!-- Original Dashboard JS handles tabs via .tab-btn class and dataset.tab, which we preserved -->
+    <!-- We might need to handle the new active class styling slightly differently if admin.css interferes, but .menu-item.active seems to check out. -->
+    <script>
+        // Additional little script to ensure mix of admin styling and dashboard functionality works smooth
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ensure tabs work if the original JS relies on specific query selectors that might have changed scope
+            // The original JS uses document.querySelectorAll('.tab-btn')... so it should be fine.
+        });
+    </script>
+</body>
+
+</html>
